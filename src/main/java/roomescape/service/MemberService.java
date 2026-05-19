@@ -17,12 +17,12 @@ public class MemberService {
     }
 
     public long login(LoginRequest request) {
-        return memberRepository.findByLoginIdAndPassword(request.getLoginId(), request.getPassword()).orElseThrow(
-                IllegalArgumentException::new).getId();
+        return memberRepository.findByLoginIdAndPassword(request.getLoginId(), request.getPassword()).
+                orElseThrow(() -> new RoomEscapeException(ErrorCode.MEMBER_NOT_FOUND)).getId();
     }
 
     public Member register(RegisterRequest request) {
-        return memberRepository.save(new Member(request.getName(), request.getLoginId(), request.getPassword()));
+        return memberRepository.save(Member.create(request.getName(), request.getLoginId(), request.getPassword()));
     }
 
     public Member find(Long memberId) {

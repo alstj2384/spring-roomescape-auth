@@ -23,13 +23,6 @@ public class Member {
         return new Member(0L, name, loginId, password);
     }
 
-    public Member(String name, String loginId, String password) {
-        this.id = 0L;
-        this.name = name;
-        this.loginId = loginId;
-        this.password = password;
-    }
-
     public long getId() {
         return id;
     }
