@@ -91,7 +91,7 @@ docker-compose up
 
 |  **기능**  |       **메서드 / URL**       | **인증** |                     **요청 본문**                     |                    **쿼리 파라미터**                     |                                       **응답**                                       |
 |:--------:|:-------------------------:|:------:|:-------------------------------------------------:|:--------------------------------------------------:|:----------------------------------------------------------------------------------:|
-| 예약 목록 조회 |     GET /reservations     |   필요   |                         -                         |             reservationName - optional             |       200 OK <br> [{reservationId, reservationName, date, theme, time}, ...]       |
+| 예약 목록 조회 |     GET /reservations     |   필요   |                         -                         |                         -                          |       200 OK <br> [{reservationId, reservationName, date, theme, time}, ...]       |
 | 예약 단건 조회 |  GET /reservations/{id}   |   필요   |                         -                         |                         -                          |          200 OK <br> {reservationId, reservationName, date, theme, time}           |
 |  예약 추가   |    POST /reservations     |   필요   |     {reservationName, themeId, date, timeId}      |                         -                          | 201 Created <br> {reservationId, reservationName, theme: {...}, date, time: {...}} |
 |  예약 취소   | DELETE /reservations/{id} |   필요   |                         -                         |                         -                          |   200 OK <br> {reservationId, reservationName, theme: {...}, date, time: {...}}    |
@@ -104,12 +104,13 @@ docker-compose up
 
 ### 어드민 API
 
-| **기능** |       **메서드 / URL**       | **인증** |              **요청 본문**              | **쿼리 파라미터** |                            **응답**                             |
-|:------:|:-------------------------:|:------:|:-----------------------------------:|:-----------:|:-------------------------------------------------------------:|
-| 시간 추가  |     POST /admin/times     |   필요   |              {startAt}              |      -      |              201 Created <br> {timeId, startAt}               |
-| 시간 삭제  | DELETE /admin/times/{id}  |   필요   |                  -                  |      -      |                            200 OK                             |
-| 테마 생성  |    POST /admin/themes     |   필요   | {reservationName, description, url} |      -      | 201 Created <br> {themeId, reservationName, description, url} |
-| 테마 삭제  | DELETE /admin/themes/{id} |   필요   |                  -                  |      -      |                            200 OK                             |
+|  **기능**  |       **메서드 / URL**       | **인증** |              **요청 본문**              |        **쿼리 파라미터**         |                                 **응답**                                 |
+|:--------:|:-------------------------:|:------:|:-----------------------------------:|:--------------------------:|:----------------------------------------------------------------------:|
+| 예약 목록 조회 |  GET /admin/reservations  |   필요   |                  -                  | reservationName - optional | 200 OK <br> [{reservationId, reservationName, date, theme, time}, ...] |
+|  시간 추가   |     POST /admin/times     |   필요   |              {startAt}              |             -              |                   201 Created <br> {timeId, startAt}                   |
+|  시간 삭제   | DELETE /admin/times/{id}  |   필요   |                  -                  |             -              |                                 200 OK                                 |
+|  테마 생성   |    POST /admin/themes     |   필요   | {reservationName, description, url} |             -              |     201 Created <br> {themeId, reservationName, description, url}      |
+|  테마 삭제   | DELETE /admin/themes/{id} |   필요   |                  -                  |             -              |                                 200 OK                                 |
 
 ## 에러 응답 명세
 
