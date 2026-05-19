@@ -182,10 +182,17 @@ class RoomescapeApplicationTest {
                 .then().statusCode(404);
     }
 
+    @Test
+    void 세션_ID가_없는_요청은_401을_반환한다() {
+        RestAssured.given()
+                .when().delete("/admin/themes/1")
+                .then().statusCode(401);
+    }
 
     @Test
-    void 인증이_되지_않은_요청은_401을_반환한다() {
+    void 잘못된_세션_ID가_입력되면_401을_반환한다() {
         RestAssured.given()
+                .sessionId("RANDOM")
                 .when().delete("/admin/themes/1")
                 .then().statusCode(401);
     }
