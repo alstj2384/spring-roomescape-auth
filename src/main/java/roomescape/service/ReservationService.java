@@ -70,7 +70,10 @@ public class ReservationService {
         ReservationDate reservationDate = new ReservationDate(request.getDate());
         ReservationTime reservationTime = findReservationTimeByTimeId(request.getTimeId());
 
-        validateIsDuplicateReservation(request.getTimeId(), request.getThemeId(), request.getDate());
+        if (reservationRepository.existsByTimeAndThemeAndDate(request.getTimeId(), request.getThemeId(),
+                request.getDate())) {
+            throw new RoomEscapeException(ErrorCode.DUPLICATE_RESERVATION);
+        }
 
         Reservation target = Reservation.reserve(member, reservationDate, reservationTime,
                 reservation.getTheme(), now);
