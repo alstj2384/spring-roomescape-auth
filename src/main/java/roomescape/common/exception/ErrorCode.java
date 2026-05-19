@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     // 요청 형식 및 필수값 위반 (BAD REQUEST)
     INVALID_NAME_LENGTH("이름 길이는 1자 ~ 20자 사이여야 합니다.", HttpStatus.BAD_REQUEST),
-    INVALID_THEME_NAME_LENGTH("테마 이름 길이는 1자 ~ 50자 사이여야 합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_THEME_NAME_LENGTH("테마 이름 길이는 1자 ~ 20자 사이여야 합니다.", HttpStatus.BAD_REQUEST),
     INVALID_THUMBNAIL_URL("유효하지 않은 이미지 주소입니다. URL은 https로 시작해야 합니다.", HttpStatus.BAD_REQUEST),
 
     // 리소스가 존재하지 않음 (NOT FOUND)
