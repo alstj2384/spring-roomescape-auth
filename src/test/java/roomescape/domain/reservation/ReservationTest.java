@@ -24,7 +24,7 @@ public class ReservationTest {
     }
 
     static Stream<Arguments> nullCases() {
-        Member member = new Member("zeze", "id", "password");
+        Member member = Member.create("zeze", "id", "password");
         ReservationDate date = new ReservationDate(LocalDate.of(2099, 1, 1));
         ReservationTime time = ReservationTime.of(1L, LocalTime.of(10, 0));
         Theme theme = Theme.load(

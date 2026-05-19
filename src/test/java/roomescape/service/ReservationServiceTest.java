@@ -175,8 +175,8 @@ class ReservationServiceTest {
                 1L);
         given(reservationRepository.findById(1L)).willReturn(Optional.of(DUMMY));
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
-        given(reservationRepository.existsByTimeAndThemeAndDate(request.getTimeId(), request.getThemeId(),
-                request.getDate())).willReturn(true);
+        given(reservationRepository.existsByTimeAndThemeAndDateExcludeId(request.getTimeId(), request.getThemeId(),
+                request.getDate(), 1L)).willReturn(true);
 
         Assertions.assertThatThrownBy(() -> reservationService.update(request, MEMBER, 1L, LocalDateTime.MIN))
                 .isInstanceOf(RoomEscapeException.class).hasMessage(
