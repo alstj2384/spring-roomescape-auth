@@ -1,7 +1,7 @@
 package roomescape.domain.reservation;
 
-import common.exception.ErrorCode;
-import common.exception.RoomEscapeException;
+import roomescape.common.exception.ErrorCode;
+import roomescape.common.exception.RoomEscapeException;
 import java.util.Objects;
 
 public class ReservationName {

@@ -1,7 +1,7 @@
 package roomescape.domain.reservation;
 
-import common.exception.ErrorCode;
-import common.exception.RoomEscapeException;
+import roomescape.common.exception.ErrorCode;
+import roomescape.common.exception.RoomEscapeException;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import roomescape.domain.theme.Theme;

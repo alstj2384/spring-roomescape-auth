@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
+import roomescape.controller.dto.request.LoginRequest;
+import roomescape.controller.dto.request.RegisterRequest;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
@@ -149,6 +151,34 @@ class RoomescapeApplicationTest {
                 .when().get("/reservations")
                 .then().log().all()
                 .body("size()", is(3));
+    }
+
+    @Test
+    void 인증이_되지_않은_요청은_401을_반환한다(){
+        RestAssured.given()
+                .when().delete("/admin/themes/1")
+                .then().statusCode(401);
+    }
+
+    @Test
+    void 인증된_요청은_정상_동작한다() {
+        RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(new RegisterRequest("zeze", "zezeId","password"))
+                .when().post("/register")
+                .then().statusCode(200);
+
+        String sessionId = RestAssured.given()
+                .contentType(ContentType.JSON)
+                .body(new LoginRequest("zezeId", "password"))
+                .when().post("/login")
+                .then().statusCode(200)
+                .extract().sessionId();
+
+        RestAssured.given()
+                .sessionId(sessionId)
+                .when().delete("/admin/themes/1")
+                .then().statusCode(200);
     }
 
     private int availableCount(String date, long themeId) {

@@ -1,4 +1,4 @@
-package common.exception;
+package roomescape.common.exception;
 
 import org.springframework.http.HttpStatus;
 
@@ -12,6 +12,7 @@ public enum ErrorCode {
     THEME_NOT_FOUND("존재하지 않는 테마입니다. 입력을 확인해 주세요.", HttpStatus.NOT_FOUND),
     RESERVATION_NOT_FOUND("존재하지 않는 예약입니다. 입력을 확인해 주세요.", HttpStatus.NOT_FOUND),
     RESERVATION_TIME_NOT_FOUND("존재하지 않는 시간입니다. 입력을 확인해 주세요.", HttpStatus.NOT_FOUND),
+    MEMBER_NOT_FOUND("존재하지 않는 유저입니다. 입력을 확인해 주세요.", HttpStatus.NOT_FOUND),
 
     // DB 제약 조건 관련 위반 (CONFLICT)
     DUPLICATE_RESERVATION("이미 예약된 시간입니다. 다른 시간을 선택해 주세요.", HttpStatus.CONFLICT),
@@ -21,6 +22,12 @@ public enum ErrorCode {
     // 비즈니스 규칙 위반 (UNPROCESSABLE_ENTITY),
     PAST_DATE_NOT_ALLOWED("기준 날짜는 과거일 수 없습니다. 오늘 이후 날짜를 입력해 주세요", HttpStatus.UNPROCESSABLE_ENTITY),
     PAST_RESERVATION_NOT_ALLOWED("과거 예약에 대한 조작은 불가능합니다. 오늘 이후 날짜와 시간으로 다시 시도해 주세요", HttpStatus.UNPROCESSABLE_ENTITY),
+
+    // 인증 실패
+    UNAUTHORIZED("인증에 실패했습니다", HttpStatus.UNAUTHORIZED),
+
+    // 인가 실패
+    FORBIDDEN("권한이 없습니다.", HttpStatus.FORBIDDEN),;
     ;
 
     private final String message;

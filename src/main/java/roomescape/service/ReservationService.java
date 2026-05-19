@@ -1,7 +1,7 @@
 package roomescape.service;
 
-import common.exception.ErrorCode;
-import common.exception.RoomEscapeException;
+import roomescape.common.exception.ErrorCode;
+import roomescape.common.exception.RoomEscapeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;

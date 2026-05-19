@@ -3,8 +3,8 @@ package roomescape.service;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-import common.exception.ErrorCode;
-import common.exception.RoomEscapeException;
+import roomescape.common.exception.ErrorCode;
+import roomescape.common.exception.RoomEscapeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
