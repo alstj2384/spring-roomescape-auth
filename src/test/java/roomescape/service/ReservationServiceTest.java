@@ -3,8 +3,6 @@ package roomescape.service;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
-import roomescape.common.exception.ErrorCode;
-import roomescape.common.exception.RoomEscapeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -15,11 +13,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import roomescape.common.exception.ErrorCode;
+import roomescape.common.exception.RoomEscapeException;
 import roomescape.controller.dto.request.ReservationCreateRequest;
 import roomescape.controller.dto.request.ReservationUpdateRequest;
+import roomescape.domain.member.Member;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.reservation.ReservationDate;
-import roomescape.domain.reservation.ReservationName;
 import roomescape.domain.reservation.ReservationTime;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeName;
@@ -31,9 +31,10 @@ import roomescape.repository.ThemeRepository;
 @ExtendWith(MockitoExtension.class)
 class ReservationServiceTest {
     private static final String URL = "https://zeze.com/thumb.jpg";
+    private static final Member MEMBER = Member.load(1L, "zeze", "zezeId", "password");
     private static final Reservation DUMMY = Reservation.load(
             1L,
-            new ReservationName("anyone"),
+            MEMBER,
             new ReservationDate(LocalDate.of(2099, 1, 1)),
             ReservationTime.of(1L, LocalTime.of(10, 0)),
             Theme.load(1L, new ThemeName("any"), "any", new ThumbnailUrl(URL))
@@ -72,10 +73,10 @@ class ReservationServiceTest {
     void 존재하지_않는_시간으로_예약시_예외() {
         given(reservationTimeRepository.findById(999L)).willReturn(Optional.empty());
 
-        ReservationCreateRequest request = new ReservationCreateRequest("zeze", LocalDate.parse("2026-05-03"), 999L,
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-05-03"), 999L,
                 1L);
 
-        Assertions.assertThatThrownBy(() -> reservationService.reserve(request, LocalDateTime.MAX))
+        Assertions.assertThatThrownBy(() -> reservationService.reserve(request, MEMBER, LocalDateTime.MAX))
                 .isInstanceOf(RoomEscapeException.class);
     }
 
@@ -84,11 +85,11 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest("zeze", LocalDate.parse("2026-04-05"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
-        Assertions.assertThatThrownBy(() -> reservationService.reserve(request, LocalDateTime.MAX));
+        Assertions.assertThatThrownBy(() -> reservationService.reserve(request, MEMBER, LocalDateTime.MAX));
     }
 
     @Test
@@ -96,12 +97,13 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest("zeze", LocalDate.parse("2026-04-05"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
         Assertions.assertThatNoException()
-                .isThrownBy(() -> reservationService.reserve(request, LocalDateTime.of(2026, 4, 5, 10, 59, 59)));
+                .isThrownBy(
+                        () -> reservationService.reserve(request, MEMBER, LocalDateTime.of(2026, 4, 5, 10, 59, 59)));
     }
 
     @Test
@@ -109,12 +111,12 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest("zeze", LocalDate.parse("2026-04-05"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
         Assertions.assertThatThrownBy(
-                () -> reservationService.reserve(request, LocalDateTime.of(2026, 4, 5, 11, 0, 1)));
+                () -> reservationService.reserve(request, MEMBER, LocalDateTime.of(2026, 4, 5, 11, 0, 1)));
     }
 
     @Test
@@ -122,12 +124,12 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest("zeze", LocalDate.parse("2026-04-06"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-06"), 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
         Assertions.assertThatNoException().isThrownBy(
-                () -> reservationService.reserve(request, LocalDateTime.of(2026, 4, 5, 11, 0, 1)));
+                () -> reservationService.reserve(request, MEMBER, LocalDateTime.of(2026, 4, 5, 11, 0, 1)));
 
     }
 
@@ -137,7 +139,7 @@ class ReservationServiceTest {
                 1L);
         given(reservationRepository.findById(999L)).willReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> reservationService.update(request, 999L, LocalDateTime.MIN))
+        Assertions.assertThatThrownBy(() -> reservationService.update(request, MEMBER, 999L, LocalDateTime.MIN))
                 .isInstanceOf(RoomEscapeException.class).hasMessage(
                         ErrorCode.RESERVATION_NOT_FOUND.getMessage());
     }
@@ -148,7 +150,7 @@ class ReservationServiceTest {
                 1L);
         given(reservationRepository.findById(1L)).willReturn(Optional.of(DUMMY));
 
-        Assertions.assertThatThrownBy(() -> reservationService.update(request, 1L, LocalDateTime.MAX))
+        Assertions.assertThatThrownBy(() -> reservationService.update(request, MEMBER, 1L, LocalDateTime.MAX))
                 .isInstanceOf(RoomEscapeException.class).hasMessage(
                         ErrorCode.PAST_RESERVATION_NOT_ALLOWED.getMessage());
     }
@@ -160,7 +162,7 @@ class ReservationServiceTest {
         given(reservationRepository.findById(1L)).willReturn(Optional.of(DUMMY));
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> reservationService.update(request, 1L, LocalDateTime.MIN))
+        Assertions.assertThatThrownBy(() -> reservationService.update(request, MEMBER, 1L, LocalDateTime.MIN))
                 .isInstanceOf(RoomEscapeException.class).hasMessage(
                         ErrorCode.RESERVATION_TIME_NOT_FOUND.getMessage());
     }
@@ -176,7 +178,7 @@ class ReservationServiceTest {
         given(reservationRepository.existsByTimeAndThemeAndDate(request.getTimeId(), request.getThemeId(),
                 request.getDate())).willReturn(true);
 
-        Assertions.assertThatThrownBy(() -> reservationService.update(request, 1L, LocalDateTime.MIN))
+        Assertions.assertThatThrownBy(() -> reservationService.update(request, MEMBER, 1L, LocalDateTime.MIN))
                 .isInstanceOf(RoomEscapeException.class).hasMessage(
                         ErrorCode.DUPLICATE_RESERVATION.getMessage());
     }

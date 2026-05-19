@@ -4,33 +4,34 @@ import roomescape.common.exception.ErrorCode;
 import roomescape.common.exception.RoomEscapeException;
 import java.time.LocalDateTime;
 import java.util.Objects;
+import roomescape.domain.member.Member;
 import roomescape.domain.theme.Theme;
 
 public class Reservation {
     private final long id;
-    private final ReservationName reservationName;
+    private final Member member;
     private final ReservationDate date;
     private final ReservationTime time;
     private final Theme theme;
 
-    private Reservation(long id, ReservationName reservationName, ReservationDate date, ReservationTime time,
+    private Reservation(long id, Member member, ReservationDate date, ReservationTime time,
                         Theme theme) {
         this.id = id;
-        this.reservationName = Objects.requireNonNull(reservationName);
+        this.member = Objects.requireNonNull(member);
         this.date = Objects.requireNonNull(date);
         this.time = Objects.requireNonNull(time);
         this.theme = Objects.requireNonNull(theme);
     }
 
-    public static Reservation load(long id, ReservationName reservationName, ReservationDate date, ReservationTime time,
+    public static Reservation load(long id, Member member, ReservationDate date, ReservationTime time,
                                    Theme theme) {
-        return new Reservation(id, reservationName, date, time, theme);
+        return new Reservation(id, member, date, time, theme);
     }
 
-    public static Reservation reserve(ReservationName reservationName, ReservationDate date, ReservationTime time,
+    public static Reservation reserve(Member member, ReservationDate date, ReservationTime time,
                                       Theme theme, LocalDateTime now) {
         Objects.requireNonNull(now);
-        Reservation reservation = new Reservation(0L, reservationName, date, time, theme);
+        Reservation reservation = new Reservation(0L, member, date, time, theme);
         reservation.ensureNotPast(now);
         return reservation;
     }
@@ -47,8 +48,8 @@ public class Reservation {
         return id;
     }
 
-    public ReservationName getName() {
-        return reservationName;
+    public Member getMember() {
+        return member;
     }
 
     public ReservationDate getDate() {

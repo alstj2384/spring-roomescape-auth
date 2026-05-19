@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import roomescape.domain.member.Member;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeName;
 import roomescape.domain.theme.ThumbnailUrl;
@@ -16,14 +17,14 @@ import roomescape.domain.theme.ThumbnailUrl;
 public class ReservationTest {
     @ParameterizedTest
     @MethodSource("nullCases")
-    void 매개변수에_NULL이_포함되면_예외가_발생한다(ReservationName reservationName, ReservationDate date, ReservationTime time,
+    void 매개변수에_NULL이_포함되면_예외가_발생한다(Member member, ReservationDate date, ReservationTime time,
                                    Theme theme) {
-        assertThatThrownBy(() -> Reservation.reserve(reservationName, date, time, theme, LocalDateTime.MIN))
+        assertThatThrownBy(() -> Reservation.reserve(member, date, time, theme, LocalDateTime.MIN))
                 .isInstanceOf(NullPointerException.class);
     }
 
     static Stream<Arguments> nullCases() {
-        ReservationName name = new ReservationName("zeze");
+        Member member = new Member("zeze", "id", "password");
         ReservationDate date = new ReservationDate(LocalDate.of(2099, 1, 1));
         ReservationTime time = ReservationTime.of(1L, LocalTime.of(10, 0));
         Theme theme = Theme.load(
@@ -35,9 +36,9 @@ public class ReservationTest {
 
         return Stream.of(
                 Arguments.of(null, date, time, theme),
-                Arguments.of(name, null, time, theme),
-                Arguments.of(name, date, null, theme),
-                Arguments.of(name, date, time, null)
+                Arguments.of(member, null, time, theme),
+                Arguments.of(member, date, null, theme),
+                Arguments.of(member, date, time, null)
         );
     }
 }

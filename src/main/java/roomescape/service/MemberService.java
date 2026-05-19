@@ -1,6 +1,5 @@
 package roomescape.service;
 
-import java.util.Optional;
 import org.springframework.stereotype.Service;
 import roomescape.common.exception.ErrorCode;
 import roomescape.common.exception.RoomEscapeException;
@@ -17,8 +16,8 @@ public class MemberService {
         this.memberRepository = memberRepository;
     }
 
-    public long login(LoginRequest request){
-        return memberRepository.findByIdAndPassword(request.getLoginId(), request.getPassword()).orElseThrow(
+    public long login(LoginRequest request) {
+        return memberRepository.findByLoginIdAndPassword(request.getLoginId(), request.getPassword()).orElseThrow(
                 IllegalArgumentException::new).getId();
     }
 
@@ -27,6 +26,7 @@ public class MemberService {
     }
 
     public Member find(Long memberId) {
-        return memberRepository.findById(memberId).orElseThrow(() -> new RoomEscapeException(ErrorCode.MEMBER_NOT_FOUND));
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new RoomEscapeException(ErrorCode.MEMBER_NOT_FOUND));
     }
 }

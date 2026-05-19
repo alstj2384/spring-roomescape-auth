@@ -27,7 +27,7 @@ public enum ErrorCode {
     UNAUTHORIZED("인증에 실패했습니다", HttpStatus.UNAUTHORIZED),
 
     // 인가 실패
-    FORBIDDEN("권한이 없습니다.", HttpStatus.FORBIDDEN),;
+    FORBIDDEN("권한이 없습니다.", HttpStatus.FORBIDDEN),
     ;
 
     private final String message;

@@ -1,17 +1,17 @@
 package roomescape.service;
 
-import roomescape.common.exception.ErrorCode;
-import roomescape.common.exception.RoomEscapeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import roomescape.common.exception.ErrorCode;
+import roomescape.common.exception.RoomEscapeException;
 import roomescape.controller.dto.request.ReservationCreateRequest;
 import roomescape.controller.dto.request.ReservationUpdateRequest;
+import roomescape.domain.member.Member;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.reservation.ReservationDate;
-import roomescape.domain.reservation.ReservationName;
 import roomescape.domain.reservation.ReservationTime;
 import roomescape.domain.theme.Theme;
 import roomescape.repository.ReservationRepository;
@@ -32,12 +32,12 @@ public class ReservationService {
     }
 
     @Transactional
-    public Reservation reserve(ReservationCreateRequest request, LocalDateTime now) {
+    public Reservation reserve(ReservationCreateRequest request, Member member, LocalDateTime now) {
         ReservationTime reservationTime = findReservationTimeByTimeId(request.getTimeId());
         Theme theme = findThemeByThemeId(request.getThemeId());
 
-        Reservation reservation = Reservation.reserve(new ReservationName(request.getName()),
-                new ReservationDate(request.getDate()), reservationTime, theme, now);
+        Reservation reservation = Reservation.reserve(member, new ReservationDate(request.getDate()), reservationTime,
+                theme, now);
 
         validateIsDuplicateReservation(request.getTimeId(), request.getThemeId(), request.getDate());
 
@@ -55,8 +55,15 @@ public class ReservationService {
         return reservationRepository.findAll();
     }
 
+    public List<Reservation> findList(Member member) {
+        if (member == null) {
+            throw new RoomEscapeException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        return reservationRepository.findAllByMemberId(member.getId());
+    }
+
     @Transactional
-    public Reservation update(ReservationUpdateRequest request, long id, LocalDateTime now) {
+    public Reservation update(ReservationUpdateRequest request, Member member, long id, LocalDateTime now) {
         Reservation reservation = findReservationById(id);
         reservation.ensureNotPast(now);
 
@@ -65,7 +72,7 @@ public class ReservationService {
 
         validateIsDuplicateReservation(request.getTimeId(), request.getThemeId(), request.getDate());
 
-        Reservation target = Reservation.reserve(reservation.getName(), reservationDate, reservationTime,
+        Reservation target = Reservation.reserve(member, reservationDate, reservationTime,
                 reservation.getTheme(), now);
         target.ensureNotPast(now);
 

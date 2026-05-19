@@ -31,16 +31,27 @@ public class ReservationController {
 
     @PostMapping("/reservations")
     @ResponseStatus(HttpStatus.CREATED)
-    public ReservationResponse create(@Valid @RequestBody ReservationCreateRequest request) {
-        Reservation reservation = reservationService.reserve(request, LocalDateTime.now());
+    public ReservationResponse create(@Valid @RequestBody ReservationCreateRequest request,
+                                      @LoginMember Member member) {
+        Reservation reservation = reservationService.reserve(request, member, LocalDateTime.now());
 
         return ReservationResponse.toDto(reservation);
     }
 
-    @GetMapping("/reservations")
+    @GetMapping("/admin/reservations")
     @ResponseStatus(HttpStatus.OK)
     public List<ReservationResponse> findList(@RequestParam(required = false) String name) {
         List<Reservation> reservations = reservationService.findList(name);
+
+        return reservations.stream()
+                .map(ReservationResponse::toDto)
+                .toList();
+    }
+
+    @GetMapping("/reservations")
+    @ResponseStatus(HttpStatus.OK)
+    public List<ReservationResponse> findList(@LoginMember Member member) {
+        List<Reservation> reservations = reservationService.findList(member);
 
         return reservations.stream()
                 .map(ReservationResponse::toDto)
@@ -63,8 +74,9 @@ public class ReservationController {
 
     @PutMapping("/reservations/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ReservationResponse update(@Valid @RequestBody ReservationUpdateRequest request, @PathVariable long id) {
-        Reservation updated = reservationService.update(request, id, LocalDateTime.now());
+    public ReservationResponse update(@Valid @RequestBody ReservationUpdateRequest request, @PathVariable long id,
+                                      @LoginMember Member member) {
+        Reservation updated = reservationService.update(request, member, id, LocalDateTime.now());
         return ReservationResponse.toDto(updated);
     }
 }
