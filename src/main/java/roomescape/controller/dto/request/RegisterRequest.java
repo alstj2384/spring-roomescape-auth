@@ -3,11 +3,11 @@ package roomescape.controller.dto.request;
 import jakarta.validation.constraints.NotNull;
 
 public class RegisterRequest {
-    @NotNull
+    @NotNull(message = "이름은 필수로 입력해야 합니다.")
     private final String name;
-    @NotNull
+    @NotNull(message = "로그인 아이디는 필수로 입력해야 합니다.")
     private final String loginId;
-    @NotNull
+    @NotNull(message = "비밀번호는 필수로 입력해야 합니다.")
     private final String password;
 
     public RegisterRequest(String name, String loginId, String password) {
