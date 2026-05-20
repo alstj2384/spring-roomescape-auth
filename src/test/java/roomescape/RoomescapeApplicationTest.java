@@ -43,7 +43,7 @@ class RoomescapeApplicationTest {
                 .extract().jsonPath().getList(".").size();
     }
 
-    private void reserve(Member member, String date, Long timeId, Long themeId, String sessionId,
+    private void reserve(Member member, String date, Long timeId, Long themeId, String token,
                          int expectedStatusCode) {
         Map<String, Object> params = new HashMap<>();
         params.put("member_id", member.getId());
@@ -53,7 +53,7 @@ class RoomescapeApplicationTest {
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
-                .sessionId(sessionId)
+                .header("Authorization", "Bearer " + token)
                 .body(params)
                 .when().post("/reservations")
                 .then().statusCode(expectedStatusCode);
@@ -61,9 +61,9 @@ class RoomescapeApplicationTest {
 
     @Test
     void 예약을_조회한다() {
-        String sessionId = registAndLogin();
+        String token = registAndLogin();
         RestAssured.given().log().all()
-                .sessionId(sessionId)
+                .header("Authorization", "Bearer " + token)
                 .when().get("/reservations")
                 .then().log().all()
                 .statusCode(200)
@@ -72,13 +72,13 @@ class RoomescapeApplicationTest {
 
     @Test
     void 이름으로_조회시_정상적으로_반환한다() {
-        String sessionId = registAndLogin();
-        reserve(MEMBER, "2099-05-01", 1L, 1L, sessionId, 201);
-        reserve(MEMBER, "2099-05-02", 1L, 2L, sessionId, 201);
-        reserve(MEMBER, "2099-05-03", 1L, 2L, sessionId, 201);
+        String token = registAndLogin();
+        reserve(MEMBER, "2099-05-01", 1L, 1L, token, 201);
+        reserve(MEMBER, "2099-05-02", 1L, 2L, token, 201);
+        reserve(MEMBER, "2099-05-03", 1L, 2L, token, 201);
 
         RestAssured.given().params("name", "zeze")
-                .sessionId(sessionId)
+                .header("Authorization", "Bearer " + token)
                 .when().get("/reservations")
                 .then().log().all()
                 .body("size()", is(3));
@@ -87,22 +87,22 @@ class RoomescapeApplicationTest {
 
     @Test
     void 과거_예약_생성시_422를_반환한다() {
-        String sessionId = registAndLogin();
-        reserve(MEMBER, "2020-01-01", 1L, 1L, sessionId, 422);
+        String token = registAndLogin();
+        reserve(MEMBER, "2020-01-01", 1L, 1L, token, 422);
     }
 
     @Test
     void 중복_예약_수행시_409를_반환한다() {
-        String sessionId = registAndLogin();
-        reserve(MEMBER, "2099-05-14", 1L, 1L, sessionId, 201);
-        reserve(MEMBER, "2099-05-14", 1L, 1L, sessionId, 409);
+        String token = registAndLogin();
+        reserve(MEMBER, "2099-05-14", 1L, 1L, token, 201);
+        reserve(MEMBER, "2099-05-14", 1L, 1L, token, 409);
     }
 
     @Test
     void 존재하지_않는_예약_조회시_404를_반환한다() {
-        String sessionId = registAndLogin();
+        String token = registAndLogin();
         RestAssured.given()
-                .sessionId(sessionId)
+                .header("Authorization", "Bearer " + token)
                 .when().get("/reservations/999")
                 .then().statusCode(404);
 
@@ -110,10 +110,10 @@ class RoomescapeApplicationTest {
 
     @Test
     void 예약_생성_후_사용_시간_조회시_해당_시간이_제외된다() {
-        String sessionId = registAndLogin();
+        String token = registAndLogin();
         int before = availableCount(AVAILABLE_DATE, 1);
 
-        reserve(MEMBER, AVAILABLE_DATE, 1L, 1L, sessionId, 201);
+        reserve(MEMBER, AVAILABLE_DATE, 1L, 1L, token, 201);
 
         int after = availableCount(AVAILABLE_DATE, 1);
         assertThat(after).isEqualTo(before - 1);
@@ -133,10 +133,10 @@ class RoomescapeApplicationTest {
 
     @Test
     void 다른_테마_예약은_사용_시간_조회에_영향을_주지_않는다() {
-        String sessionId = registAndLogin();
+        String token = registAndLogin();
         int before = availableCount(AVAILABLE_DATE, 1);
 
-        reserve(MEMBER, AVAILABLE_DATE, 1L, 2L, sessionId, 201);
+        reserve(MEMBER, AVAILABLE_DATE, 1L, 2L, token, 201);
 
         int after = availableCount(AVAILABLE_DATE, 1);
         assertThat(after).isEqualTo(before);
@@ -166,11 +166,11 @@ class RoomescapeApplicationTest {
 
     @Test
     void 예약이_존재하는_시간을_지우면_409를_반환한다() {
-        String sessionId = registAndLogin();
-        reserve(MEMBER, "2099-05-14", 1L, 1L, sessionId, 201);
+        String token = registAndLogin();
+        reserve(MEMBER, "2099-05-14", 1L, 1L, token, 201);
 
         RestAssured.given().log().all()
-                .sessionId(sessionId)
+                .header("Authorization", "Bearer " + token)
                 .when().delete("/admin/times/1")
                 .then().log().all().statusCode(409);
     }
@@ -183,26 +183,26 @@ class RoomescapeApplicationTest {
     }
 
     @Test
-    void 세션_ID가_없는_요청은_401을_반환한다() {
+    void 토큰이_없는_요청은_401을_반환한다() {
         RestAssured.given()
                 .when().delete("/admin/themes/1")
                 .then().statusCode(401);
     }
 
     @Test
-    void 잘못된_세션_ID가_입력되면_401을_반환한다() {
+    void 잘못된_토큰이_입력되면_401을_반환한다() {
         RestAssured.given()
-                .sessionId("RANDOM")
+                .header("Authorization", "Bearer " + "RANDOM")
                 .when().delete("/admin/themes/1")
                 .then().statusCode(401);
     }
 
     @Test
     void 인증된_요청은_정상_동작한다() {
-        String sessionId = registAndLogin();
+        String token = registAndLogin();
 
         RestAssured.given()
-                .sessionId(sessionId)
+                .header("Authorization", "Bearer " + token)
                 .when().delete("/admin/themes/1")
                 .then().statusCode(200);
     }
@@ -214,12 +214,12 @@ class RoomescapeApplicationTest {
                 .when().post("/register")
                 .then().statusCode(200);
 
-        String sessionId = RestAssured.given()
+        String token = RestAssured.given()
                 .contentType(ContentType.JSON)
                 .body(new LoginRequest("zezeId", "password"))
                 .when().post("/login")
                 .then().statusCode(200)
-                .extract().sessionId();
-        return sessionId;
+                .extract().jsonPath().getString("token");
+        return token;
     }
 }
