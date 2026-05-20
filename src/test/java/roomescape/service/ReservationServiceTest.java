@@ -171,8 +171,7 @@ class ReservationServiceTest {
     void 예약_수정시_사용_불가능한_날짜가_들어오면_예외가_발생한다() {
         ReservationTime reservationTime = ReservationTime.of(1L, LocalTime.parse("11:00"));
 
-        ReservationUpdateRequest request = new ReservationUpdateRequest("zeze", LocalDate.parse("2099-04-06"), 1L,
-                1L);
+        ReservationUpdateRequest request = new ReservationUpdateRequest("zeze", LocalDate.parse("2099-04-06"), 1L, 1L);
         given(reservationRepository.findById(1L)).willReturn(Optional.of(DUMMY));
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(reservationRepository.existsByTimeAndThemeAndDateExcludeId(request.getTimeId(), request.getThemeId(),

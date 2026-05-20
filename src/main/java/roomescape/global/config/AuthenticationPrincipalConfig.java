@@ -7,24 +7,26 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import roomescape.global.LoginCheckInterceptor;
 import roomescape.global.LoginMemberArgumentResolver;
-import roomescape.service.MemberService;
 
 @Configuration
 public class AuthenticationPrincipalConfig implements WebMvcConfigurer {
-    private final MemberService memberService;
+    private final LoginCheckInterceptor loginCheckInterceptor;
+    private final LoginMemberArgumentResolver loginMemberArgumentResolver;
 
-    public AuthenticationPrincipalConfig(MemberService memberService) {
-        this.memberService = memberService;
+    public AuthenticationPrincipalConfig(LoginCheckInterceptor loginCheckInterceptor,
+                                         LoginMemberArgumentResolver loginMemberArgumentResolver) {
+        this.loginCheckInterceptor = loginCheckInterceptor;
+        this.loginMemberArgumentResolver = loginMemberArgumentResolver;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(new LoginCheckInterceptor())
+        registry.addInterceptor(loginCheckInterceptor)
                 .addPathPatterns("/reservations/**", "/admin/**");
     }
 
     @Override
     public void addArgumentResolvers(List<HandlerMethodArgumentResolver> resolvers) {
-        resolvers.add(new LoginMemberArgumentResolver(memberService));
+        resolvers.add(loginMemberArgumentResolver);
     }
 }

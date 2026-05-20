@@ -2,22 +2,35 @@ package roomescape.global;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpHeaders;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import roomescape.common.exception.ErrorCode;
 import roomescape.common.exception.RoomEscapeException;
 
+@Component
 public class LoginCheckInterceptor implements HandlerInterceptor {
-    private static final String LOGIN_MEMBER_ID = "loginMemberId";
+    private static final String BEARER_PREFIX = "Bearer ";
+
+    private final JwtTokenProvider jwtTokenProvider;
+
+    public LoginCheckInterceptor(JwtTokenProvider jwtTokenProvider) {
+        this.jwtTokenProvider = jwtTokenProvider;
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        HttpSession session = request.getSession(false);
+        String token = extractToken(request);
+        jwtTokenProvider.validate(token);
+        return true;
+    }
 
-        if(session == null || session.getAttribute(LOGIN_MEMBER_ID) == null){
+    private String extractToken(HttpServletRequest request) {
+        String header = request.getHeader(HttpHeaders.AUTHORIZATION);
+        if (header == null || !header.startsWith(BEARER_PREFIX)) {
             throw new RoomEscapeException(ErrorCode.UNAUTHORIZED);
         }
-        return HandlerInterceptor.super.preHandle(request, response, handler);
+        return header.substring(BEARER_PREFIX.length());
     }
 }
