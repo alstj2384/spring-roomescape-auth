@@ -60,16 +60,16 @@ public class ReservationController {
 
     @GetMapping("/reservations/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public ReservationResponse find(@PathVariable long id) {
-        Reservation reservation = reservationService.find(id);
+    public ReservationResponse find(@PathVariable long id, @LoginMember Member member) {
+        Reservation reservation = reservationService.find(id, member);
 
         return ReservationResponse.toDto(reservation);
     }
 
     @DeleteMapping("/reservations/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void delete(@PathVariable Long id) {
-        reservationService.cancel(id, LocalDateTime.now());
+    public void delete(@PathVariable Long id, @LoginMember Member member) {
+        reservationService.cancel(id, member, LocalDateTime.now());
     }
 
     @PutMapping("/reservations/{id}")

@@ -9,13 +9,16 @@ import roomescape.common.exception.ErrorCode;
 import roomescape.common.exception.RoomEscapeException;
 import roomescape.controller.dto.request.ReservationCreateRequest;
 import roomescape.controller.dto.request.ReservationUpdateRequest;
+import roomescape.domain.Store;
 import roomescape.domain.member.Member;
+import roomescape.domain.member.Role;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.reservation.ReservationDate;
 import roomescape.domain.reservation.ReservationTime;
 import roomescape.domain.theme.Theme;
 import roomescape.repository.ReservationRepository;
 import roomescape.repository.ReservationTimeRepository;
+import roomescape.repository.StoreRepository;
 import roomescape.repository.ThemeRepository;
 
 @Service
@@ -23,29 +26,54 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final ReservationTimeRepository reservationTimeRepository;
     private final ThemeRepository themeRepository;
+    private final StoreRepository storeRepository;
 
     public ReservationService(ReservationRepository reservationRepository,
-                              ReservationTimeRepository reservationTimeRepository, ThemeRepository themeRepository) {
+                              ReservationTimeRepository reservationTimeRepository, ThemeRepository themeRepository,
+                              StoreRepository storeRepository) {
         this.reservationRepository = reservationRepository;
         this.reservationTimeRepository = reservationTimeRepository;
         this.themeRepository = themeRepository;
+        this.storeRepository = storeRepository;
     }
 
     @Transactional
     public Reservation reserve(ReservationCreateRequest request, Member member, LocalDateTime now) {
         ReservationTime reservationTime = findReservationTimeByTimeId(request.getTimeId());
+        Store store = storeRepository.findById(request.getStoreId())
+                .orElseThrow(() -> new RoomEscapeException(ErrorCode.STORE_NOT_FOUND));
         Theme theme = findThemeByThemeId(request.getThemeId());
 
         Reservation reservation = Reservation.reserve(member, new ReservationDate(request.getDate()), reservationTime,
-                theme, now);
+                theme, store, now);
 
         validateIsDuplicateReservation(request.getTimeId(), request.getThemeId(), request.getDate());
 
         return reservationRepository.save(reservation);
     }
 
-    public Reservation find(long reservationId) {
-        return findReservationById(reservationId);
+    public Reservation find(long reservationId, Member member) {
+        Reservation reservation = findReservationById(reservationId);
+        validateAuthority(member, reservation);
+
+        return reservation;
+    }
+
+    private void validateAuthority(Member member, Reservation reservation) {
+        if (member.getRole() == Role.CUSTOMER) {
+            Store store = storeRepository.findByMemberId(member.getId())
+                    .orElseThrow(() -> new RoomEscapeException(ErrorCode.STORE_NOT_FOUND));
+
+            if (store.getId() != reservation.getStore().getId()) {
+                throw new RoomEscapeException(ErrorCode.UNAUTHORIZED);
+            }
+        }
+
+        if (member.getRole() == Role.MANAGER) {
+            if (member.getId() == reservation.getMember().getId()) {
+                throw new RoomEscapeException(ErrorCode.UNAUTHORIZED);
+            }
+        }
     }
 
     public List<Reservation> findList(String name) {
@@ -65,6 +93,11 @@ public class ReservationService {
     @Transactional
     public Reservation update(ReservationUpdateRequest request, Member member, long id, LocalDateTime now) {
         Reservation reservation = findReservationById(id);
+        validateAuthority(member, reservation);
+
+        Store store = storeRepository.findById(reservation.getStore().getId())
+                .orElseThrow(() -> new RoomEscapeException(ErrorCode.STORE_NOT_FOUND));
+
         reservation.ensureNotPast(now);
 
         ReservationDate reservationDate = new ReservationDate(request.getDate());
@@ -76,15 +109,17 @@ public class ReservationService {
         }
 
         Reservation target = Reservation.reserve(member, reservationDate, reservationTime,
-                reservation.getTheme(), now);
+                reservation.getTheme(), store, now);
         target.ensureNotPast(now);
 
         return reservationRepository.update(id, target);
     }
 
     @Transactional
-    public void cancel(long reservationId, LocalDateTime now) {
+    public void cancel(long reservationId, Member member, LocalDateTime now) {
         Reservation reservation = findReservationById(reservationId);
+        validateAuthority(member, reservation);
+
         reservation.ensureNotPast(now);
 
         reservationRepository.deleteById(reservationId);

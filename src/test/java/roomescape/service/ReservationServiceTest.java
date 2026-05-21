@@ -1,5 +1,6 @@
 package roomescape.service;
 
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
@@ -8,16 +9,21 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Optional;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import roomescape.common.exception.ErrorCode;
 import roomescape.common.exception.RoomEscapeException;
 import roomescape.controller.dto.request.ReservationCreateRequest;
 import roomescape.controller.dto.request.ReservationUpdateRequest;
+import roomescape.domain.Store;
 import roomescape.domain.member.Member;
+import roomescape.domain.member.Role;
 import roomescape.domain.reservation.Reservation;
 import roomescape.domain.reservation.ReservationDate;
 import roomescape.domain.reservation.ReservationTime;
@@ -26,18 +32,22 @@ import roomescape.domain.theme.ThemeName;
 import roomescape.domain.theme.ThumbnailUrl;
 import roomescape.repository.ReservationRepository;
 import roomescape.repository.ReservationTimeRepository;
+import roomescape.repository.StoreRepository;
 import roomescape.repository.ThemeRepository;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ReservationServiceTest {
     private static final String URL = "https://zeze.com/thumb.jpg";
-    private static final Member MEMBER = Member.load(1L, "zeze", "zezeId", "password");
+    private static final Member MEMBER = Member.load(1L, "zeze", "zezeId", "password", Role.CUSTOMER);
+    private static final Store STORE = new Store(1L, "테스트", MEMBER);
     private static final Reservation DUMMY = Reservation.load(
             1L,
             MEMBER,
             new ReservationDate(LocalDate.of(2099, 1, 1)),
             ReservationTime.of(1L, LocalTime.of(10, 0)),
-            Theme.load(1L, new ThemeName("any"), "any", new ThumbnailUrl(URL))
+            Theme.load(1L, new ThemeName("any"), "any", new ThumbnailUrl(URL)),
+            STORE
     );
 
     @Mock
@@ -49,14 +59,23 @@ class ReservationServiceTest {
     @Mock
     private ThemeRepository themeRepository;
 
+    @Mock
+    private StoreRepository storeRepository;
+
     @InjectMocks
     private ReservationService reservationService;
+
+    @BeforeEach
+    void setUp() {
+        given(storeRepository.findByMemberId(anyLong())).willReturn(Optional.of(STORE));
+        given(storeRepository.findById(anyLong())).willReturn(Optional.of(STORE));
+    }
 
     @Test
     void 예약_취소_성공() {
         given(reservationRepository.findById(1L)).willReturn(Optional.of(DUMMY));
 
-        reservationService.cancel(1L, LocalDateTime.MIN);
+        reservationService.cancel(1L, MEMBER, LocalDateTime.MIN);
 
         verify(reservationRepository).deleteById(1L);
     }
@@ -65,7 +84,7 @@ class ReservationServiceTest {
     void 존재하지_않는_예약_취소시_예외_발생() {
         given(reservationRepository.findById(999L)).willReturn(Optional.empty());
 
-        Assertions.assertThatThrownBy(() -> reservationService.cancel(999L, LocalDateTime.MIN))
+        Assertions.assertThatThrownBy(() -> reservationService.cancel(999L, MEMBER, LocalDateTime.MIN))
                 .isInstanceOf(RoomEscapeException.class);
     }
 
@@ -74,7 +93,7 @@ class ReservationServiceTest {
         given(reservationTimeRepository.findById(999L)).willReturn(Optional.empty());
 
         ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-05-03"), 999L,
-                1L);
+                1L, 1L);
 
         Assertions.assertThatThrownBy(() -> reservationService.reserve(request, MEMBER, LocalDateTime.MAX))
                 .isInstanceOf(RoomEscapeException.class);
@@ -85,7 +104,7 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
@@ -97,7 +116,7 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
@@ -111,7 +130,7 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-05"), 1L, 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 
@@ -124,7 +143,7 @@ class ReservationServiceTest {
         ReservationTime reservationTime = ReservationTime.of(LocalTime.parse("11:00"));
         Theme theme = Theme.load(1L, new ThemeName("테마1"), "설명", new ThumbnailUrl(URL));
 
-        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-06"), 1L, 1L);
+        ReservationCreateRequest request = new ReservationCreateRequest(LocalDate.parse("2026-04-06"), 1L, 1L, 1L);
         given(reservationTimeRepository.findById(1L)).willReturn(Optional.of(reservationTime));
         given(themeRepository.findById(1L)).willReturn(Optional.of(theme));
 

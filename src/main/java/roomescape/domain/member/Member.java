@@ -1,26 +1,26 @@
 package roomescape.domain.member;
 
-import java.util.Objects;
-
 public class Member {
     private final long id;
     private final String name;
     private final String loginId;
     private final String password;
+    private final Role role;
 
-    private Member(long id, String name, String loginId, String password) {
+    private Member(long id, String name, String loginId, String password, Role role) {
         this.id = id;
-        this.name = Objects.requireNonNull(name);
-        this.loginId = Objects.requireNonNull(loginId);
-        this.password = Objects.requireNonNull(password);
+        this.name = name;
+        this.loginId = loginId;
+        this.password = password;
+        this.role = role;
     }
 
-    public static Member load(long id, String name, String loginId, String password) {
-        return new Member(id, name, loginId, password);
+    public static Member load(long id, String name, String loginId, String password, Role role) {
+        return new Member(id, name, loginId, password, role);
     }
 
-    public static Member create(String name, String loginId, String password) {
-        return new Member(0L, name, loginId, password);
+    public static Member create(String name, String loginId, String password, Role role) {
+        return new Member(0L, name, loginId, password, role);
     }
 
     public long getId() {
@@ -37,5 +37,9 @@ public class Member {
 
     public String getPassword() {
         return password;
+    }
+
+    public Role getRole() {
+        return role;
     }
 }

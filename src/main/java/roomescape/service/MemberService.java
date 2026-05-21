@@ -6,6 +6,7 @@ import roomescape.common.exception.RoomEscapeException;
 import roomescape.controller.dto.request.LoginRequest;
 import roomescape.controller.dto.request.RegisterRequest;
 import roomescape.domain.member.Member;
+import roomescape.domain.member.Role;
 import roomescape.repository.MemberRepository;
 
 @Service
@@ -22,7 +23,8 @@ public class MemberService {
     }
 
     public Member register(RegisterRequest request) {
-        return memberRepository.save(Member.create(request.getName(), request.getLoginId(), request.getPassword()));
+        return memberRepository.save(Member.create(request.getName(), request.getLoginId(), request.getPassword(),
+                Role.CUSTOMER));
     }
 
     public Member find(Long memberId) {

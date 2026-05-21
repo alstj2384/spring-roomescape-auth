@@ -16,10 +16,15 @@ public class ReservationCreateRequest {
     @Positive(message = "Theme ID는 양수여야 합니다.")
     private final Long themeId;
 
-    public ReservationCreateRequest(LocalDate date, Long timeId, Long themeId) {
+    @NotNull
+    @Positive(message = "Store ID는 양수여야 합니다.")
+    private final Long storeId;
+
+    public ReservationCreateRequest(LocalDate date, Long timeId, Long themeId, Long storeId) {
         this.date = date;
         this.timeId = timeId;
         this.themeId = themeId;
+        this.storeId = storeId;
     }
 
     public LocalDate getDate() {
@@ -32,5 +37,9 @@ public class ReservationCreateRequest {
 
     public Long getThemeId() {
         return themeId;
+    }
+
+    public Long getStoreId() {
+        return storeId;
     }
 }

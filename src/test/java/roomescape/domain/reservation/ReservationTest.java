@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import roomescape.domain.Store;
 import roomescape.domain.member.Member;
+import roomescape.domain.member.Role;
 import roomescape.domain.theme.Theme;
 import roomescape.domain.theme.ThemeName;
 import roomescape.domain.theme.ThumbnailUrl;
@@ -19,12 +21,13 @@ public class ReservationTest {
     @MethodSource("nullCases")
     void 매개변수에_NULL이_포함되면_예외가_발생한다(Member member, ReservationDate date, ReservationTime time,
                                    Theme theme) {
-        assertThatThrownBy(() -> Reservation.reserve(member, date, time, theme, LocalDateTime.MIN))
+        Store store = new Store(1L, "테스트", Member.create("m", "id", "pw", Role.MANAGER));
+        assertThatThrownBy(() -> Reservation.reserve(member, date, time, theme, store, LocalDateTime.MIN))
                 .isInstanceOf(NullPointerException.class);
     }
 
     static Stream<Arguments> nullCases() {
-        Member member = Member.create("zeze", "id", "password");
+        Member member = Member.create("zeze", "id", "password", Role.CUSTOMER);
         ReservationDate date = new ReservationDate(LocalDate.of(2099, 1, 1));
         ReservationTime time = ReservationTime.of(1L, LocalTime.of(10, 0));
         Theme theme = Theme.load(

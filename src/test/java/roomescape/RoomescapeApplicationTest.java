@@ -16,13 +16,14 @@ import org.springframework.test.annotation.DirtiesContext;
 import roomescape.controller.dto.request.LoginRequest;
 import roomescape.controller.dto.request.RegisterRequest;
 import roomescape.domain.member.Member;
+import roomescape.domain.member.Role;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.DEFINED_PORT)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class RoomescapeApplicationTest {
 
     private static final String AVAILABLE_DATE = "2099-06-01";
-    private static final Member MEMBER = Member.load(1L, "zeze", "zezeId", "password");
+    private static final Member MEMBER = Member.load(1L, "zeze", "zezeId", "password", Role.CUSTOMER);
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -34,6 +35,10 @@ class RoomescapeApplicationTest {
                 "insert into theme(name, description, thumbnail_url) values ('공포', '무서워요', 'https://zeze.com')");
         jdbcTemplate.update(
                 "insert into theme(name, description, thumbnail_url) values ('개그', '재밌어요', 'https://zeze.com')");
+        jdbcTemplate.update(
+                "insert into member(name, login_id, password, role) values ('제제', 'login_zeze', '1234', 'MANAGER')");
+        jdbcTemplate.update(
+                "insert into store(name, member_id) values ('홍대점', 1)");
     }
 
     private int availableCount(String date, long themeId) {
@@ -50,6 +55,7 @@ class RoomescapeApplicationTest {
         params.put("date", date);
         params.put("timeId", timeId);
         params.put("themeId", themeId);
+        params.put("storeId", 1L);
 
         RestAssured.given()
                 .contentType(ContentType.JSON)
